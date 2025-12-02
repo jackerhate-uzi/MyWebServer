@@ -19,7 +19,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-
+#include <sys/uio.h>
 class http_conn {
 public:
     // 设置读取文件的名称 m_real_file 大小
