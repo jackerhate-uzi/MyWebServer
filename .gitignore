@@ -1,0 +1,20 @@
+# .gitignore
+# 1. 忽略CMake构建目录和生成的文件
+build/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# 2. 忽略编译出的二进制文件
+server
+
+# 3. 忽略编辑器配置
+.vscode/
+.coc/
+.cache/
+compile_commands.json
+*.swap
+
+# 4. 忽略OS生成的文件
+.DS_Store
