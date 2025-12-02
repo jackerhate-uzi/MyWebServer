@@ -22,6 +22,7 @@ include_directories(${PROJECT_SOURCE_DIR})
 set(SOURCE_FILES
     main.cpp
     webserver.cpp
+    http/http_conn.cpp
 )
 
 # 6. 生成可执行文件
