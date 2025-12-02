@@ -18,8 +18,8 @@
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <sys/uio.h>
+#include <unistd.h>
 class http_conn {
 public:
     // 设置读取文件的名称 m_real_file 大小
@@ -99,7 +99,7 @@ private:
     bool add_content_type();
     bool add_content_length(int content_length);
     bool add_linger();
-    bool add_blank_line;
+    bool add_blank_line();
 
 public:
     // 所有socket上的事件都被注册到同一个epoll内核事件表中
