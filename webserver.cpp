@@ -90,6 +90,7 @@ void WebServer::eventListen()
     // 5. 创建epoll对象
     m_epollfd = epoll_create(5);
     assert(m_epollfd != -1);
+    http_conn::m_epollfd = m_epollfd;
 
     // 6. 将监听socket(listenfd)加入Epoll
     addfd(m_epollfd, m_listenfd);

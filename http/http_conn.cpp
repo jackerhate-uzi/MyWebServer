@@ -203,7 +203,7 @@ bool http_conn::write()
 
 // --- 定义网站根目录 ---
 // 指向resource
-const char* doc_root = "./resource";
+const char* doc_root = "./resources";
 
 // --- 从状态机：解析一行 ---
 // 从m_read_buf中找到\r\n,并将其转化为\0\0
@@ -225,11 +225,13 @@ http_conn::LINE_STATUS http_conn::parse_line()
             return LINE_BAD;
         } else if (temp == '\n') {
             //  处理上次只读到\r没有读到\n的情况
-            m_read_buf[m_checked_idx - 1] = '\0';
-            m_read_buf[m_checked_idx++] = '\0';
-            return LINE_OK;
+            if ((m_checked_idx > 1) && (m_read_buf[m_checked_idx - 1] == '\r')) {
+                m_read_buf[m_checked_idx - 1] = '\0';
+                m_read_buf[m_checked_idx++] = '\0';
+                return LINE_OK;
+            }
+            return LINE_BAD;
         }
-        return LINE_BAD;
     }
     return LINE_OPEN; // 没找到换行符，继续接收
 }
@@ -270,7 +272,7 @@ http_conn::HTTP_CODE http_conn::parse_request_line(char* text)
         m_url = strchr(m_url, '/');
     }
 
-    if (!m_url || m_url[0] == '/') {
+    if (!m_url || m_url[0] != '/') {
         return BAD_REQUEST;
     }
 
@@ -495,7 +497,7 @@ bool http_conn::process_write(HTTP_CODE ret)
     case NO_RESOURCE: {
         add_status_line(404, error_404_title);
         add_headers(strlen(error_404_form));
-        if (!add_content(error_403_form)) {
+        if (!add_content(error_404_form)) {
             return false;
         }
         break;
