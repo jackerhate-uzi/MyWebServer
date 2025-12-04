@@ -11,6 +11,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "http/http_conn.h"
 #include "webserver.h"
 
 //--- 工具函数开始 ---
@@ -56,12 +57,15 @@ WebServer::WebServer()
     m_port = 0;
     m_epollfd = -1;
     m_listenfd = -1;
+    // 预分配http_conn对象
+    users = new http_conn[MAX_FD];
 }
 
 WebServer::~WebServer()
 {
     close(m_epollfd);
     close(m_listenfd);
+    delete[] users;
 }
 
 void WebServer::init(int port) { m_port = port; }
@@ -114,7 +118,6 @@ void WebServer::eventLoop()
         int number = epoll_wait(m_epollfd, events, MAX_EVENT_NUMBER, -1);
 
         if (number < 0 && errno != EINTR) {
-            std::cout << "Epoll failure" << std::endl;
             break;
         }
 
@@ -130,36 +133,37 @@ void WebServer::eventLoop()
                 // 接受连接
                 int connfd = accept(m_listenfd, (struct sockaddr*)&client_address, &client_addrlength);
                 if (connfd < 0) {
-                    std::cout << "Accept error errno is: " << errno << std::endl;
                     continue;
                 }
 
-                // 将新连接加入Epoll监听
-                addfd(m_epollfd, connfd);
-                std::cout << "New connection from FD: " << connfd << std::endl;
+                // 初始化连接对象
+                users[connfd].init(connfd, client_address);
             }
-            // 情况2：现有连接发来了数据（Echo逻辑）
-            else if (events[i].events & EPOLLIN) {
-                char buffer[1024] = { 0 };
-                // 读取数据
-                int bytes_read = recv(sockfd, buffer, sizeof(buffer) - 1, 0);
-
-                if (bytes_read <= 0) {
-                    // 读到0表示对方关闭了连接
-                    // 读到-1表示出错
-                    close(sockfd);
-                    epoll_ctl(m_epollfd, EPOLL_CTL_DEL, sockfd, 0);
-                    std::cout << "Client disconnect FD: " << sockfd << std::endl;
+            // 2. 处理异常事件
+            else if (events[i].events & (EPOLLHUP | EPOLLRDHUP | EPOLLERR)) {
+                users[sockfd].close_conn();
+            }
+            // 3. 处理读事件
+            else if (events[i].events & EPOLLIN){
+                // 一次性读完所有数据
+                if (users[sockfd].read_once()) {
+                    // 核心：调用业务逻辑处理 === HTTP解析 -> 生成响应
+                    users[sockfd].process();
                 } else {
-
-                    std::cout << "Recv from " << sockfd << ": " << buffer << std::endl;
-                    // Echo:原样发回
-                    send(sockfd, buffer, bytes_read, 0);
+                users[sockfd].close_conn();
                 }
+            }
+            // 4. 处理写事件
+            else if (events[i].events & EPOLLOUT) {
+               // 一次性写完所有数据
+               if (!users[sockfd].write()) {
+                    users[sockfd].close_conn();
+               }
             }
         }
     }
 }
+
 
 void WebServer::start()
 {

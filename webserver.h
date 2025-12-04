@@ -14,6 +14,7 @@
 
 #include "lock/locker.h"
 
+#include "http/http_conn.h"
 //最大文件描述符数量
 const int MAX_FD = 65536;
 //最大事件数
@@ -29,6 +30,9 @@ public:
 
     //启动服务器
     void start();
+
+    //用于存储所有连接的客户端信息
+    http_conn* users;
 private:
     //初始化网络通信（socket, bind, listen)
     void eventListen();
