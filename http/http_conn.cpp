@@ -535,3 +535,21 @@ bool http_conn::process_write(HTTP_CODE ret)
     m_iv_count = 1;
     return true;
 }
+void http_conn::process()
+{
+    // 1. 解析 HTTP 请求
+    HTTP_CODE read_ret = process_read();
+    if (read_ret == NO_REQUEST) {
+        modfd(m_epollfd, m_sockfd, EPOLLIN);
+        return;
+    }
+
+    // 2. 生成响应
+    bool write_ret = process_write(read_ret);
+    if (!write_ret) {
+        close_conn();
+    }
+
+    // 3. 注册写事件，等待内核发送
+    modfd(m_epollfd, m_sockfd, EPOLLOUT);
+}

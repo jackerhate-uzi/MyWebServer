@@ -17,19 +17,6 @@
 //--- 工具函数开始 ---
 
 /*
- * 设置文件描述符为非阻塞模式
- * 在Epoll下，必须使用非阻塞IO
- * 否则一个阻塞的read会把整个服务器卡死
- */
-int setnonblocking(int fd)
-{
-    int old_option = fcntl(fd, F_GETFL);
-    int new_option = old_option | O_NONBLOCK;
-    fcntl(fd, F_SETFL, new_option);
-    return old_option;
-}
-
-/*
  * 将文件描述符添加到epollfd的监听队列中
  * epollfd：Epoll句柄
  * fd：要监听的文件描述符

@@ -20,6 +20,10 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <unistd.h>
+
+// 设置文件描述符为非阻塞
+int setnonblocking(int fd);
+
 class http_conn {
 public:
     // 设置读取文件的名称 m_real_file 大小
