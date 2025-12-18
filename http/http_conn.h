@@ -1,7 +1,6 @@
 #ifndef HTTPCONNECTION_H
 #define HTTPCONNECTION_H
 
-#include "../lock/locker.h"
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
@@ -21,8 +20,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
-// 设置文件描述符为非阻塞
-int setnonblocking(int fd);
+#include "../lock/locker.h"
 
 class http_conn {
 public:
@@ -38,33 +36,33 @@ public:
 
     // 主状态机状态：当前正在分析哪一部分
     enum CHECK_STATE {
-        CHECK_STATE_REQUESTLINE = 0, // 分析请求行
-        CHECK_STATE_HEADER,          // 分析头部字段
-        CHECK_STATE_CONTENT          // 分析请求体
+        CHECK_STATE_REQUESTLINE = 0,  // 分析请求行
+        CHECK_STATE_HEADER,           // 分析头部字段
+        CHECK_STATE_CONTENT           // 分析请求体
     };
 
     // 服务器处理HTTP请求的可能结果
     enum HTTP_CODE {
-        NO_REQUEST,       // 请求不完整，需要继续读取客户数据
-        GET_REQUEST,      // 获得了一个完整的请求
-        BAD_REQUEST,      // 客户请求有语法错误
-        NO_RESOURCE,      // 请求的资源不存在
-        FORBIDEN_REQUEST, // 客户对资源没有访问权限
-        FILE_REQUEST,     // 请求文件资源
-        INTERNAL_ERROR,   // 服务器内部错误
-        CLOSED_CONNECTION // 客户端关闭连接
+        NO_REQUEST,        // 请求不完整，需要继续读取客户数据
+        GET_REQUEST,       // 获得了一个完整的请求
+        BAD_REQUEST,       // 客户请求有语法错误
+        NO_RESOURCE,       // 请求的资源不存在
+        FORBIDEN_REQUEST,  // 客户对资源没有访问权限
+        FILE_REQUEST,      // 请求文件资源
+        INTERNAL_ERROR,    // 服务器内部错误
+        CLOSED_CONNECTION  // 客户端关闭连接
     };
 
     // 从状态机状态：读取的一行处于什么状态
     enum LINE_STATUS {
-        LINE_OK = 0, // 读取到一个完整的行
-        LINE_BAD,    // 行出错
-        LINE_OPEN    // 行数据不完整
+        LINE_OK = 0,  // 读取到一个完整的行
+        LINE_BAD,     // 行出错
+        LINE_OPEN     // 行数据不完整
     };
 
 public:
-    http_conn() { }
-    ~http_conn() { }
+    http_conn() {}
+    ~http_conn() {}
 
 public:
     // 初始化新接受的连接
@@ -87,25 +85,25 @@ private:
     bool process_write(HTTP_CODE ret);
 
     // 下面这一组函数被process_read调用以分析HTTP请求
-    HTTP_CODE parse_request_line(char *text);
-    HTTP_CODE parse_headers(char *text);
-    HTTP_CODE parse_content(char *text);
+    HTTP_CODE parse_request_line(char* text);
+    HTTP_CODE parse_headers(char* text);
+    HTTP_CODE parse_content(char* text);
     HTTP_CODE do_request();
     char* get_line() { return m_read_buf + m_start_line; }
     LINE_STATUS parse_line();
 
     // 下面这一组函数被process_write调用以填充HTTP应答
     void unmap();
-    bool add_response(const char *format, ...);
-    bool add_content(const char *content);
-    bool add_status_line(int status, const char *title);
+    bool add_response(const char* format, ...);
+    bool add_content(const char* content);
+    bool add_status_line(int status, const char* title);
     bool add_headers(int content_length);
     bool add_content_type();
     bool add_content_length(int content_length);
     bool add_linger();
     bool add_blank_line();
 
-  public:
+public:
     // 所有socket上的事件都被注册到同一个epoll内核事件表中
     // 所以将epollfd设置为静态的
     static int m_epollfd;
@@ -142,7 +140,7 @@ private:
     char* m_version;
     char* m_host;
     int m_content_length;
-    bool m_linger; // 是否保持连接
+    bool m_linger;  // 是否保持连接
 
     // 客户请求的目标文件被mmap到内存中的起始位置
     char* m_file_address;

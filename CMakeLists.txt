@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
+set(CMAKE_CXX_COMPILER "clang++")
 project(MyWebServer)
 
 # 1. 设置C++标准
@@ -13,7 +14,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # -Wall: 开启所有警告
 # -pthread: 必须，Linux下使用多线程库
 # -O0: 调试阶段不优化，方便追踪变量;生产环境可改为 -O2
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall -pthread -O0")
+set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -g -O1")
 
 # 4. 头文件搜索路径
 include_directories(${PROJECT_SOURCE_DIR})

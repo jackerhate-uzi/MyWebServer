@@ -226,5 +226,4 @@ void cb_func(client_data* user_data) {
     assert(user_data);
     close(user_data->sockfd);
     http_conn::m_user_count--;
-    printf("close fd %d\n", user_data->sockfd);
 }

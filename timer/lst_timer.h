@@ -84,12 +84,12 @@ public:
     int m_TIMESLOT;
 
 public:
-    Utils();
+    Utils() {}
     Utils(Utils&&) = default;
     Utils(const Utils&) = default;
     Utils& operator=(Utils&&) = default;
     Utils& operator=(const Utils&) = default;
-    ~Utils();
+    ~Utils() {}
     void init(int timeslot);
 
     // 对文件描述符设置为非阻塞
