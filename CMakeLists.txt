@@ -26,10 +26,11 @@ set(SOURCE_FILES
     webserver.cpp
     http/http_conn.cpp
     timer/lst_timer.cpp
+    CGImysql/sql_connection_pool.cpp
 )
 
 # 6. 生成可执行文件
 add_executable(server ${SOURCE_FILES})
 
 # 7.链接库
-# target_link_libraries(server mysqlclient)
+target_link_libraries(server mysqlclient)
